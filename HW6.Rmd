@@ -144,3 +144,20 @@ pca200 <- sapply(rgb.pca, compress, k = 200, simplify = "array")
 writeJPEG(pca200, "pca200.jpeg")
 ```
 
+```{r fig.cap="Original photo", out.width = '100%'}
+knitr::include_graphics("piggy.jpg")
+```
+
+
+```{r fig.cap="PCA50", out.width = '100%'}
+knitr::include_graphics("pca50.jpeg")
+```
+
+```{r fig.cap="PCA100", out.width = '100%'}
+knitr::include_graphics("pca100.jpeg")
+```
+
+
+```{r fig.cap="PCA200", out.width = '100%'}
+knitr::include_graphics("pca200.jpeg")
+```
