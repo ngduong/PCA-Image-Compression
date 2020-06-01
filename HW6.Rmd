@@ -1,0 +1,146 @@
+---
+title: "Image Compression"
+author: "Ngoc Duong"
+date: "5/30/2020"
+output: pdf_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(jpeg)
+library(ISLR)
+library(factoextra)
+library(gridExtra)
+library(corrplot)
+library(RColorBrewer)
+library(gplots)
+```
+
+
+### Hierarchical Clustering
+
+```{r}
+#load data
+data("USArrests")
+
+data = USArrests
+```
+
+a) Cluster states using complete linkage and Euclidean distance
+
+```{r}
+hc.complete <-hclust(dist(data), method = "complete")
+
+fviz_dend(hc.complete, k = 4,
+          cex = 0.3,
+          palette = "jco",
+          color_labels_by_k = TRUE,
+          rect = TRUE, rect_fill = TRUE, 
+          rect_border = "jco",labels_track_height = 2.5)
+```
+
+
+b) Cut the dendrogram at height that results in 3 distinct clusters
+
+```{r}
+fviz_dend(hc.complete, k = 3,
+          cex = 0.3,
+          palette = "jco",
+          color_labels_by_k = TRUE,
+          rect = TRUE, rect_fill = TRUE, 
+          rect_border = "jco",labels_track_height = 2.5)
+```
+
+Look at the states that are in each clusters
+
+```{r}
+ind3.complete <-cutree(hc.complete, 3)
+
+#cluster 1
+data[ind3.complete==1,]
+
+#cluster 2
+data[ind3.complete==2,]
+
+#cluster 3
+data[ind3.complete==3,]
+```
+
+
+c) Hierarchically cluster the states using complete linkage and Euclidean distance after scaling the variables to have SD = 1
+
+```{r}
+dat1 <-scale(data)
+```
+
+```{r}
+hc.complete.scale <-hclust(dist(dat1), method = "complete")
+
+fviz_dend(hc.complete.scale, k = 3,
+          cex = 0.3,
+          palette = "jco",
+          color_labels_by_k = TRUE,
+          rect = TRUE, rect_fill = TRUE, 
+          rect_border = "jco",labels_track_height = 2.5)
+```
+
+```{r}
+ind3.complete.scale <-cutree(hc.complete.scale, 3)
+
+#cluster 1
+dat1[ind3.complete.scale==1,]
+
+#cluster 2
+dat1[ind3.complete.scale==2,]
+
+#cluster 3
+dat1[ind3.complete.scale==3,]
+```
+
+d) We observe that the cluster memberships changed after scaling the variables. The variables should be scaled before the inter-observation dissimilarities are computed in order to ensure equal weights given to every variable in $\mathbf{X}$ despite their different scales.
+
+### PCA
+
+```{r}
+img <- readJPEG('piggy.jpg')
+
+dim(img)
+
+r <- img[,,1]
+g <- img[,,2]
+b <- img[,,3]
+
+img.r.pca <- prcomp(r, center = FALSE)
+img.g.pca <- prcomp(g, center = FALSE)
+img.b.pca <- prcomp(b, center = FALSE)
+
+rgb.pca <- list(img.r.pca, img.g.pca, img.b.pca)
+
+# Approximate X with XV_kV_k^T
+compress <- function(pr, k)
+{
+  compressed.img <- pr$x[,1:k] %*% t(pr$rotation[,1:k])
+  compressed.img
+}
+
+# Using first 20 PCs
+pca20 <- sapply(rgb.pca, compress, k = 20, simplify = "array")
+
+writeJPEG(pca20, "pca20.jpeg")
+
+# Try to increase the number of PCs!
+pca50 <- sapply(rgb.pca, compress, k = 50, simplify = "array")
+
+writeJPEG(pca50, "pca50.jpeg")
+
+pca100 <- sapply(rgb.pca, compress, k = 100, simplify = "array")
+
+writeJPEG(pca100, "pca100.jpeg")
+
+pca200 <- sapply(rgb.pca, compress, k = 200, simplify = "array")
+
+writeJPEG(pca200, "pca200.jpeg")
+```
+
